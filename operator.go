@@ -1,22 +1,24 @@
+/*
+Sniperkit-Bot
+- Status: analyzed
+*/
+
 package dagflow
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
-	"fmt"
 	"strings"
 )
-
 
 type Operator interface {
 	Run(State, Logger) error
 }
 
-
-type NoopOperator struct {}
+type NoopOperator struct{}
 
 func (op *NoopOperator) Run(state State, logger Logger) error { return nil }
-
 
 type CmdOperator struct {
 	cmd *exec.Cmd
@@ -39,4 +41,3 @@ type GoFuncOperator func(State, Logger) error
 func (f GoFuncOperator) Run(state State, logger Logger) error {
 	return f(state, logger)
 }
-

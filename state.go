@@ -1,3 +1,8 @@
+/*
+Sniperkit-Bot
+- Status: analyzed
+*/
+
 package dagflow
 
 import (
@@ -9,27 +14,25 @@ type Tuple struct {
 	Val interface{}
 }
 
-
 type State interface {
 	Set(string, interface{})
 	Get(string) (interface{}, bool)
 	Has(string) bool
 	Remove(string)
 	Count() int
-	Keys() ([]string)
-	Values() ([]interface{})
-	Iter() (<-chan Tuple)
+	Keys() []string
+	Values() []interface{}
+	Iter() <-chan Tuple
 	//Items() (map[string]interface{})
 	//MarshalJSON() ([]byte, error)
 }
-
 
 type MemoryState struct {
 	sync.RWMutex
 	items map[string]interface{}
 }
 
-func NewMemoryState() *MemoryState{
+func NewMemoryState() *MemoryState {
 	ms := &MemoryState{
 		items: make(map[string]interface{}),
 	}
@@ -73,8 +76,8 @@ func (ms *MemoryState) Keys() []string {
 	defer ms.RUnlock()
 	keys := make([]string, 0, len(ms.items))
 	for k := range ms.items {
-        	keys = append(keys, k)
-    	}
+		keys = append(keys, k)
+	}
 	return keys
 }
 
@@ -84,12 +87,11 @@ func (ms *MemoryState) Values() []interface{} {
 	values := make([]interface{}, 0, len(ms.items))
 	for _, val := range ms.items {
 		values = append(values, val)
-    	}
+	}
 	return values
 }
 
-
-func (ms *MemoryState) Iter() <- chan Tuple {
+func (ms *MemoryState) Iter() <-chan Tuple {
 	ch := make(chan Tuple)
 	go func() {
 		for key, val := range ms.items {
@@ -99,4 +101,3 @@ func (ms *MemoryState) Iter() <- chan Tuple {
 	}()
 	return ch
 }
-

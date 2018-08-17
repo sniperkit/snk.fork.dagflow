@@ -1,3 +1,8 @@
+/*
+Sniperkit-Bot
+- Status: analyzed
+*/
+
 package dagflow
 
 import (
@@ -5,19 +10,17 @@ import (
 	"os"
 )
 
-
 // A Logger is a minimalistic interface for the library to log messages to. Should
 // be used to provide custom logging writers for the library to use.
 
-
 type LogPriority int
+
 const (
 	DEBUG LogPriority = iota
 	INFO
 	WARN
 	ERROR
 )
-
 
 type Logger interface {
 	Debug(...interface{})
@@ -31,14 +34,13 @@ type Logger interface {
 }
 
 type defaultLogger struct {
-	logger *log.Logger
+	logger   *log.Logger
 	priority LogPriority
 }
 
-
 func NewDefaultLogger(priority LogPriority, prefix string) *defaultLogger {
 	return &defaultLogger{
-		logger: log.New(os.Stdout, prefix, log.LstdFlags),
+		logger:   log.New(os.Stdout, prefix, log.LstdFlags),
 		priority: priority,
 	}
 }
@@ -54,7 +56,6 @@ func (dl *defaultLogger) logf(priority LogPriority, format string, args ...inter
 		dl.logger.Printf(format, args...)
 	}
 }
-
 
 func (dl *defaultLogger) Debug(args ...interface{}) {
 	dl.log(DEBUG, args...)
@@ -87,4 +88,3 @@ func (dl *defaultLogger) Warnf(format string, args ...interface{}) {
 func (dl *defaultLogger) Errorf(format string, args ...interface{}) {
 	dl.logf(ERROR, format, args...)
 }
-

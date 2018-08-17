@@ -1,4 +1,7 @@
-package: github.com/loanzen/dagflow
+# Sniperkit-Bot
+# - Status: analyzed
+
+package: github.com/sniperkit/snk.fork.dagflow
 import:
 - package: github.com/pkg/errors
   version: ^0.8.0

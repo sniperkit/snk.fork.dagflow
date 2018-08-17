@@ -1,14 +1,20 @@
+/*
+Sniperkit-Bot
+- Status: analyzed
+*/
+
 package dagflow
 
 import (
-	"github.com/pkg/errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 type Dag struct {
-	root *Node
-	nodes map[string]*Node
-	state State
+	root   *Node
+	nodes  map[string]*Node
+	state  State
 	logger Logger
 }
 
@@ -22,7 +28,6 @@ const (
 	FAILED
 )
 
-
 func NewDag(name string, state State, logger Logger) *Dag {
 	root := NewNode(name, new(NoopOperator), true, true, 0)
 	root.Status = SUCCESS
@@ -31,9 +36,9 @@ func NewDag(name string, state State, logger Logger) *Dag {
 	}
 
 	dag := &Dag{
-		root: root,
-		nodes: make(map[string]*Node),
-		state: state,
+		root:   root,
+		nodes:  make(map[string]*Node),
+		state:  state,
 		logger: logger,
 	}
 	dag.nodes[name] = root
@@ -68,7 +73,7 @@ func (dag *Dag) AddChildAt(parent string, child *Node, pos int) {
 
 func (dag *Dag) AddDag(parent string, child *Dag) {
 	dag.AddChild(parent, child.root)
-	for k, v:= range child.nodes {
+	for k, v := range child.nodes {
 		dag.nodes[k] = v
 	}
 }
@@ -80,7 +85,7 @@ func (dag *Dag) IsSolvable() bool {
 }
 
 func (dag *Dag) Solve() error {
-	if (!dag.IsSolvable()) {
+	if !dag.IsSolvable() {
 		return errors.New(
 			fmt.Sprintf("%s dag is not solvable as it has cycles", dag.root.Name))
 	}
@@ -92,9 +97,9 @@ func hasCirclularDep(current *Node, visited map[string]bool) bool {
 	visited[current.Name] = true
 	for _, child := range current.Children {
 		if _, ok := visited[child.Name]; ok {
-		    return true
+			return true
 		}
-		if (hasCirclularDep(child, visited)) {
+		if hasCirclularDep(child, visited) {
 			return true
 		}
 		delete(visited, child.Name)
@@ -104,31 +109,30 @@ func hasCirclularDep(current *Node, visited map[string]bool) bool {
 }
 
 type TaskUnit struct {
-	node *Node
+	node             *Node
 	completionStatus chan string
 }
 
 type dagSolver struct {
-	dag *Dag
-	status DagFlowStatus
-	completed []*Node
-	exit chan int
+	dag              *Dag
+	status           DagFlowStatus
+	completed        []*Node
+	exit             chan int
 	completionStatus chan string
-	queue chan *TaskUnit
+	queue            chan *TaskUnit
 }
 
 func newDagSolver(dag *Dag) *dagSolver {
 	solver := dagSolver{
 		dag: dag, status: PENDING,
-		completed: make([]*Node, 0, dag.NumOfNodes()),
-		exit: make(chan int),
+		completed:        make([]*Node, 0, dag.NumOfNodes()),
+		exit:             make(chan int),
 		completionStatus: make(chan string, dag.NumOfNodes()),
-		queue: make(chan *TaskUnit, 10),
+		queue:            make(chan *TaskUnit, 10),
 	}
 
 	return &solver
 }
-
 
 func (solver *dagSolver) Solve() error {
 	dag := solver.dag
@@ -137,7 +141,7 @@ func (solver *dagSolver) Solve() error {
 	go solver.solveChildren(dag.root)
 
 	for len(solver.completed) < dag.NumOfNodes() {
-		name := <- solver.completionStatus
+		name := <-solver.completionStatus
 		node := solver.dag.nodes[name]
 		if node.CanSolveChildren() {
 			solver.completed = append(solver.completed, node)
@@ -165,13 +169,13 @@ func (solver *dagSolver) work() {
 	done := false
 	for !done {
 		select {
-		case <- solver.exit:
+		case <-solver.exit:
 			done = true
 			fmt.Println("Worker Goroutine is stopping as got exit signal ")
 			break
 
-		case task:= <- solver.queue:
-			go func(){
+		case task := <-solver.queue:
+			go func() {
 				solver.dag.logger.Infof("Solving Node %s", task.node.Name)
 				task.node.Solve(solver.dag.state, solver.dag.logger)
 				solver.dag.logger.Infof("Completed Node %s, status: %d", task.node.Name, task.node.Status)
@@ -182,8 +186,3 @@ func (solver *dagSolver) work() {
 
 	}
 }
-
-
-
-
-
